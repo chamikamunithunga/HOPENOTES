@@ -46,6 +46,7 @@ export default function App() {
   const [mode, setMode] = useState('light');
   const [gradeFilter, setGradeFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [forceRefresh, setForceRefresh] = useState(0);
   const [notes, setNotes] = useState([]);
   const [loadingNotes, setLoadingNotes] = useState(true);
@@ -528,39 +529,29 @@ export default function App() {
   };
 
   const filteredNotes = useMemo(() => {
-    console.log('=== FILTERING NOTES ===');
-    console.log('Total notes available:', notes.length);
-    console.log('Level filter:', levelFilter);
-    console.log('Grade filter:', gradeFilter);
-    console.log('Sample notes:', notes.slice(0, 3));
-    
+    const term = searchTerm.trim().toLowerCase();
+
     const filtered = notes.filter((note) => {
-      const matchesLevel = levelFilter === 'all' || note.level === levelFilter;
-      const matchesGrade = gradeFilter === 'all' || String(note.grade) === String(gradeFilter);
-      
-      if (!matchesLevel) {
-        console.log('Note filtered out by level:', note.subject, 'level:', note.level, 'filter:', levelFilter);
-      }
-      if (!matchesGrade) {
-        console.log('Note filtered out by grade:', note.subject, 'grade:', note.grade, 'filter:', gradeFilter);
-      }
-      
-      return matchesLevel && matchesGrade;
+      const matchesLevel =
+        levelFilter === 'all' || (note.level || 'school') === levelFilter;
+    const matchesGrade =
+      gradeFilter === 'all' || String(note.grade) === String(gradeFilter);
+
+      const subjectText = (note.subject || '').toLowerCase();
+      const titleText = (note.title || '').toLowerCase();
+      const descriptionText = (note.description || '').toLowerCase();
+
+      const matchesSearch =
+        !term ||
+        subjectText.includes(term) ||
+        titleText.includes(term) ||
+        descriptionText.includes(term);
+
+      return matchesLevel && matchesGrade && matchesSearch;
     });
-    
-    console.log('Filtered notes:', filtered.length, 'out of', notes.length);
-    console.log('File uploads in filtered:', filtered.filter(n => n.type === 'file').length);
-    console.log('Breakdown by type:', {
-      drive: filtered.filter(n => n.type === 'drive').length,
-      file: filtered.filter(n => n.type === 'file').length,
-      telegram: filtered.filter(n => n.type === 'telegram').length,
-      whatsappChannel: filtered.filter(n => n.type === 'whatsappChannel').length,
-      youtube: filtered.filter(n => n.type === 'youtube').length,
-      website: filtered.filter(n => n.type === 'website').length
-    });
-    
+
     return filtered;
-  }, [notes, levelFilter, gradeFilter]);
+  }, [notes, levelFilter, gradeFilter, searchTerm]);
 
   const isStandalonePage = currentHash === '#hn-news' || currentHash === '#about';
 
@@ -652,12 +643,27 @@ export default function App() {
               sx={{
                 mb: 2.5,
                 display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'flex-end',
-                alignItems: { xs: 'flex-start', sm: 'center' },
+                flexDirection: { xs: 'column', md: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'stretch', md: 'center' },
                 gap: 1.5
               }}
             >
+              {/* Search by subject/title/description (supports Sinhala, Tamil, English text) */}
+              <TextField
+                size="small"
+                fullWidth
+                placeholder="Search by subject (e.g. Mathematics, ගණිතය)"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{
+                  maxWidth: { md: 280 },
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 999
+                  }
+                }}
+              />
+
               <Button
                 variant="outlined"
                 size="small"
@@ -669,8 +675,7 @@ export default function App() {
                   refreshData();
                 }}
                 sx={{
-                  minWidth: { xs: '100%', sm: 'auto' },
-                  order: { xs: -1, sm: 0 }
+                  minWidth: { xs: '100%', sm: 'auto' }
                 }}
               >
                 🔄 Refresh Data
