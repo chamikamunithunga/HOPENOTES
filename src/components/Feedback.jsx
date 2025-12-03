@@ -11,6 +11,8 @@ import {
   Divider
 } from '@mui/material';
 import { saveFeedback, fetchFeedbacks } from '../services/feedbacks.js';
+import { feedbackRateLimiter, getClientId } from '../utils/rateLimiter.js';
+import { sanitizeName, sanitizeFeedback } from '../utils/inputSanitizer.js';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import PersonIcon from '@mui/icons-material/Person';
 
@@ -75,13 +77,26 @@ export function Feedback() {
     setSubmitting(true);
 
     try {
-      await saveFeedback(sanitizedName, sanitizedFeedback);
-      setStatus('Thank you for your feedback! Your message helps us improve HopeNotes for students across Sri Lanka.');
+      const result = await saveFeedback(sanitizedName, sanitizedFeedback);
+
+      // Optimistically add the new feedback to the top of the list
+      setFeedbacks((prev) => [
+        {
+          id: result?.id || `${Date.now()}`,
+          name: sanitizedName,
+          feedback: sanitizedFeedback,
+          createdAt: new Date()
+        },
+        ...prev
+      ]);
+
+      setStatus(
+        'Thank you for your feedback! Your message helps us improve HopeNotes for students across Sri Lanka.'
+      );
       setName('');
       setFeedback('');
-      // Reload feedbacks to show the new one
-      await loadFeedbacks();
     } catch (err) {
+      console.error('Error submitting feedback:', err);
       setError('Something went wrong while submitting your feedback. Please try again.');
     } finally {
       setSubmitting(false);
