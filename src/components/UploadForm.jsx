@@ -27,7 +27,10 @@ import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import donateImage from '../images/Gemini_Generated_Image_d5zif3d5zif3d5zi.png';
 
 const initialFormState = {
@@ -54,6 +57,16 @@ export function UploadForm({ onUploadSuccess }) {
   const [error, setError] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [urlStatus, setUrlStatus] = useState({
+    drive: null,
+    whatsapp: null,
+    telegram: null
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'error'
+  });
 
   const handleChange = (event) => {
     const { name, value, files } = event.target;
@@ -63,6 +76,68 @@ export function UploadForm({ onUploadSuccess }) {
       ...prev,
       [name]: files ? files[0] : value
     }));
+
+    // Live URL validation for key link fields
+    const raw = files ? '' : value;
+    if (name === 'driveLink' && (mode === 'links')) {
+      const text = String(raw || '').trim();
+      if (!text) {
+        setUrlStatus((s) => ({ ...s, drive: null }));
+        return;
+      }
+      const pattern = /^https?:\/\/(drive\.google\.com|docs\.google\.com)\//i;
+      if (pattern.test(text)) {
+        setUrlStatus((s) => ({ ...s, drive: 'ok' }));
+      } else {
+        setUrlStatus((s) => ({ ...s, drive: 'error' }));
+        setSnackbar({
+          open: true,
+          message:
+            'Please paste a valid Google Drive link (https://drive.google.com or https://docs.google.com).',
+          severity: 'error'
+        });
+      }
+    }
+
+    if (name === 'whatsappLink' && (mode === 'whatsapp' || mode === 'uni')) {
+      const text = String(raw || '').trim();
+      if (!text) {
+        setUrlStatus((s) => ({ ...s, whatsapp: null }));
+        return;
+      }
+      const pattern = /^https?:\/\/(chat\.whatsapp\.com|wa\.me)\//i;
+      if (pattern.test(text)) {
+        setUrlStatus((s) => ({ ...s, whatsapp: 'ok' }));
+      } else {
+        setUrlStatus((s) => ({ ...s, whatsapp: 'error' }));
+        setSnackbar({
+          open: true,
+          message:
+            'Please paste a valid WhatsApp invite link (for example https://chat.whatsapp.com/...).',
+          severity: 'error'
+        });
+      }
+    }
+
+    if (name === 'telegramLink' && mode === 'telegram') {
+      const text = String(raw || '').trim();
+      if (!text) {
+        setUrlStatus((s) => ({ ...s, telegram: null }));
+        return;
+      }
+      const pattern = /^https?:\/\/(t\.me|telegram\.me)\//i;
+      if (pattern.test(text)) {
+        setUrlStatus((s) => ({ ...s, telegram: 'ok' }));
+      } else {
+        setUrlStatus((s) => ({ ...s, telegram: 'error' }));
+        setSnackbar({
+          open: true,
+          message:
+            'Please paste a valid Telegram group link (for example https://t.me/... or https://telegram.me/...).',
+          severity: 'error'
+        });
+      }
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -389,9 +464,14 @@ export function UploadForm({ onUploadSuccess }) {
 
         await addDoc(collection(db, 'fileUploads'), fileData);
 
-        setStatus(
-          'Thank you for uploading your notes! Your file has been successfully uploaded and will help students continue their education during difficult times.'
-        );
+        const successMessage =
+          'Thank you for uploading your notes! Your file has been successfully uploaded and will help students continue their education during difficult times.';
+        setStatus(successMessage);
+        setSnackbar({
+          open: true,
+          message: successMessage,
+          severity: 'success'
+        });
         setUploadProgress(0);
         setIsUploading(false);
         setForm(initialFormState);
@@ -556,6 +636,11 @@ export function UploadForm({ onUploadSuccess }) {
         'Thank you for sharing this education website. Online resources can be a lifeline for students when physical materials are unavailable after disasters.';
     }
     setStatus(message);
+    setSnackbar({
+      open: true,
+      message,
+      severity: 'success'
+    });
 
     // Clear form fields after successful submit, keep current mode
     setForm(initialFormState);
@@ -570,6 +655,7 @@ export function UploadForm({ onUploadSuccess }) {
   };
 
   return (
+    <>
     <Paper
       elevation={0}
       sx={(theme) => ({
@@ -1588,7 +1674,22 @@ export function UploadForm({ onUploadSuccess }) {
                   value={form.driveLink}
                   onChange={handleChange}
                   required
-                  helperText="Paste a folder or file link if your notes live on Google Drive."
+                  error={urlStatus.drive === 'error'}
+                  helperText={
+                    urlStatus.drive === 'ok'
+                      ? 'Link looks good ✓'
+                      : urlStatus.drive === 'error'
+                      ? 'Please check the link format. It should start with https://drive.google.com or https://docs.google.com.'
+                      : 'Paste a folder or file link if your notes live on Google Drive.'
+                  }
+                  InputProps={{
+                    endAdornment:
+                      urlStatus.drive === 'ok' ? (
+                        <CheckCircleOutlineIcon color="success" fontSize="small" />
+                      ) : urlStatus.drive === 'error' ? (
+                        <ErrorOutlineIcon color="error" fontSize="small" />
+                      ) : null
+                  }}
                   sx={{
                     '& .MuiInputBase-root': {
                       fontSize: { xs: 14, sm: 15, md: 16 },
@@ -1712,7 +1813,22 @@ export function UploadForm({ onUploadSuccess }) {
                   value={form.whatsappLink}
                   onChange={handleChange}
                   required
-                  helperText="WhatsApp group link for sharing notes and updates."
+                  error={urlStatus.whatsapp === 'error'}
+                  helperText={
+                    urlStatus.whatsapp === 'ok'
+                      ? 'Link looks good ✓'
+                      : urlStatus.whatsapp === 'error'
+                      ? 'Please check the link. It should be a WhatsApp invite, e.g. https://chat.whatsapp.com/…'
+                      : 'WhatsApp group link for sharing notes and updates.'
+                  }
+                  InputProps={{
+                    endAdornment:
+                      urlStatus.whatsapp === 'ok' ? (
+                        <CheckCircleOutlineIcon color="success" fontSize="small" />
+                      ) : urlStatus.whatsapp === 'error' ? (
+                        <ErrorOutlineIcon color="error" fontSize="small" />
+                      ) : null
+                  }}
                   sx={{
                     '& .MuiInputBase-root': {
                       fontSize: { xs: 14, sm: 15, md: 16 },
@@ -1774,7 +1890,22 @@ export function UploadForm({ onUploadSuccess }) {
                   value={form.telegramLink}
                   onChange={handleChange}
                   required
-                  helperText="Telegram group link for sharing notes and updates."
+                  error={urlStatus.telegram === 'error'}
+                  helperText={
+                    urlStatus.telegram === 'ok'
+                      ? 'Link looks good ✓'
+                      : urlStatus.telegram === 'error'
+                      ? 'Please check the link. It should be a Telegram group link, e.g. https://t.me/…'
+                      : 'Telegram group link for sharing notes and updates.'
+                  }
+                  InputProps={{
+                    endAdornment:
+                      urlStatus.telegram === 'ok' ? (
+                        <CheckCircleOutlineIcon color="success" fontSize="small" />
+                      ) : urlStatus.telegram === 'error' ? (
+                        <ErrorOutlineIcon color="error" fontSize="small" />
+                      ) : null
+                  }}
                   sx={{
                     '& .MuiInputBase-root': {
                       fontSize: { xs: 14, sm: 15, md: 16 },
@@ -2147,7 +2278,22 @@ export function UploadForm({ onUploadSuccess }) {
                 value={form.whatsappLink}
                 onChange={handleChange}
                 required
-                helperText="University WhatsApp group link for this batch or faculty."
+                error={urlStatus.whatsapp === 'error'}
+                helperText={
+                  urlStatus.whatsapp === 'ok'
+                    ? 'Link looks good ✓'
+                    : urlStatus.whatsapp === 'error'
+                    ? 'Please check the link. It should be a WhatsApp invite, e.g. https://chat.whatsapp.com/…'
+                    : 'University WhatsApp group link for this batch or faculty.'
+                }
+                InputProps={{
+                  endAdornment:
+                    urlStatus.whatsapp === 'ok' ? (
+                      <CheckCircleOutlineIcon color="success" fontSize="small" />
+                    ) : urlStatus.whatsapp === 'error' ? (
+                      <ErrorOutlineIcon color="error" fontSize="small" />
+                    ) : null
+                }}
               />
             </Grid>
 
@@ -2240,6 +2386,44 @@ export function UploadForm({ onUploadSuccess }) {
         </Box>
       </Box>
     </Paper>
+
+    {/* URL validation popup */}
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={2000}
+      onClose={(_, reason) => {
+        if (reason === 'clickaway') return;
+        setSnackbar((s) => ({ ...s, open: false }));
+      }}
+      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      TransitionProps={{ appear: true }}
+      sx={{
+        '& .MuiSnackbarContent-root': {
+          width: '100%'
+        }
+      }}
+    >
+      <Alert
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        severity={snackbar.severity}
+        variant="filled"
+        sx={{
+          width: '100%',
+          maxWidth: { xs: '92vw', sm: '450px' },
+          fontSize: { xs: 13, sm: 14 },
+          px: { xs: 2, sm: 3 },
+          py: { xs: 1.5, sm: 2 },
+          borderRadius: { xs: 2, sm: 3 },
+          boxShadow: (theme) =>
+            theme.palette.mode === 'light'
+              ? '0 18px 40px rgba(15,23,42,0.35)'
+              : '0 22px 50px rgba(0,0,0,0.9)'
+        }}
+      >
+        {snackbar.message}
+      </Alert>
+    </Snackbar>
+    </>
   );
 }
 
