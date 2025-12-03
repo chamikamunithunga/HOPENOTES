@@ -1236,8 +1236,16 @@ export function UploadForm({ onUploadSuccess }) {
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={12} md={6}>
-                  <FormControl fullWidth required>
+                <Grid item xs={12} sm={6} md={6}>
+                  <FormControl
+                    fullWidth
+                    required
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        minHeight: { xs: 48, sm: 52 }
+                      }
+                    }}
+                  >
                     <InputLabel id="grade-file-label" sx={{ fontSize: { xs: 14, sm: 15, md: 16 }, fontWeight: 600 }}>Grade</InputLabel>
                     <Select
                       labelId="grade-file-label"
@@ -1270,8 +1278,16 @@ export function UploadForm({ onUploadSuccess }) {
                   </FormControl>
                 </Grid>
 
-                <Grid item xs={12} sm={12} md={6}>
-                  <FormControl fullWidth required>
+                <Grid item xs={12} sm={6} md={6}>
+                  <FormControl
+                    fullWidth
+                    required
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        minHeight: { xs: 48, sm: 52 }
+                      }
+                    }}
+                  >
                     <InputLabel id="medium-file-label" sx={{ fontSize: { xs: 14, sm: 15, md: 16 }, fontWeight: 600 }}>Medium</InputLabel>
                     <Select
                       labelId="medium-file-label"
@@ -1633,34 +1649,36 @@ export function UploadForm({ onUploadSuccess }) {
               </>
             )}
 
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel id="medium-label" sx={{ fontSize: { xs: 14, sm: 15, md: 16 }, fontWeight: 600 }}>Medium</InputLabel>
-                <Select
-                  labelId="medium-label"
-                  id="medium"
-                  name="medium"
-                  label="Medium"
-                  value={form.medium}
-                  onChange={handleChange}
-                >
-                  <MenuItem value="">
-                    <em>Select medium</em>
-                  </MenuItem>
-                  <MenuItem value="all">All mediums</MenuItem>
-                  <MenuItem value="Sinhala">Sinhala Medium</MenuItem>
-                  <MenuItem value="Tamil">Tamil Medium</MenuItem>
-                  <MenuItem value="English">English Medium</MenuItem>
-                  <MenuItem value="Sinhala and English">Sinhala and English</MenuItem>
-                  <MenuItem value="Japanese">Japanese Medium</MenuItem>
-                  <MenuItem value="Korean">Korean Medium</MenuItem>
-                  <MenuItem value="Hindi">Hindi Medium</MenuItem>
-                </Select>
-                <FormHelperText>
-                  Choose the language that best matches your notes or links.
-                </FormHelperText>
-              </FormControl>
-            </Grid>
+            {mode !== 'file' && (
+              <Grid item xs={12} md={6}>
+                <FormControl fullWidth required>
+                  <InputLabel id="medium-label" sx={{ fontSize: { xs: 14, sm: 15, md: 16 }, fontWeight: 600 }}>Medium</InputLabel>
+                  <Select
+                    labelId="medium-label"
+                    id="medium"
+                    name="medium"
+                    label="Medium"
+                    value={form.medium}
+                    onChange={handleChange}
+                  >
+                    <MenuItem value="">
+                      <em>Select medium</em>
+                    </MenuItem>
+                    <MenuItem value="all">All mediums</MenuItem>
+                    <MenuItem value="Sinhala">Sinhala Medium</MenuItem>
+                    <MenuItem value="Tamil">Tamil Medium</MenuItem>
+                    <MenuItem value="English">English Medium</MenuItem>
+                    <MenuItem value="Sinhala and English">Sinhala and English</MenuItem>
+                    <MenuItem value="Japanese">Japanese Medium</MenuItem>
+                    <MenuItem value="Korean">Korean Medium</MenuItem>
+                    <MenuItem value="Hindi">Hindi Medium</MenuItem>
+                  </Select>
+                  <FormHelperText>
+                    Choose the language that best matches your notes or links.
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+            )}
 
                 {mode === 'links' && (
               <Grid item xs={12} sm={12} md={6}>
