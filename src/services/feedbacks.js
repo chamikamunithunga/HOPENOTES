@@ -3,12 +3,12 @@ import { db } from "../firebase";
 
 export async function saveFeedback(name, feedback) {
   try {
-    await addDoc(collection(db, "feedbacks"), {
+    const docRef = await addDoc(collection(db, "feedbacks"), {
       name: name.trim(),
       feedback: feedback.trim(),
       createdAt: serverTimestamp()
     });
-    return { success: true };
+    return { success: true, id: docRef.id };
   } catch (error) {
     console.error("Error saving feedback:", error);
     throw error;
