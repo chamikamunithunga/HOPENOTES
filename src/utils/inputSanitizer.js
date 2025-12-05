@@ -80,6 +80,7 @@ export function sanitizeName(name) {
   if (sanitized.length > maxLength) {
     sanitized = sanitized.substring(0, maxLength);
   }
+
   
   return sanitized;
 }
