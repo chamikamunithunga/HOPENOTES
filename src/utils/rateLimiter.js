@@ -55,6 +55,7 @@ class RateLimiter {
     return Math.max(0, this.maxRequests - validTimestamps.length);
   }
 
+  
   // Get time until next request is allowed
   getTimeUntilReset(key) {
     this.cleanup();
