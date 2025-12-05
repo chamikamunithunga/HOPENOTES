@@ -26,6 +26,7 @@ import { WhatsappChannels } from './components/WhatsappChannels.jsx';
 import { YoutubeChannels } from './components/YoutubeChannels.jsx';
 import { EducationWebsites } from './components/EducationWebsites.jsx';
 import { Feedback } from './components/Feedback.jsx';
+import { HopeHub } from './components/HopeHub.jsx';
 import { ScrollToTop } from './components/ScrollToTop.jsx';
 import { getAppTheme } from './theme.js';
 import { fetchDriveLinks } from './services/driveLinks.js';
@@ -553,7 +554,8 @@ export default function App() {
     return filtered;
   }, [notes, levelFilter, gradeFilter, searchTerm]);
 
-  const isStandalonePage = currentHash === '#hn-news' || currentHash === '#about';
+  const isStandalonePage =
+    currentHash === '#hn-news' || currentHash === '#about' || currentHash === '#hopehub';
 
   const handleNewsFieldChange = (event) => {
     const { name, value } = event.target;
@@ -1127,6 +1129,15 @@ export default function App() {
                 </Box>
               </Box>
             </Container>
+          </section>
+
+          {/* HopeHub as a separate \"page\" view */}
+          <section
+            id="hopehub"
+            className="section"
+            style={{ display: currentHash === '#hopehub' ? 'block' : 'none', paddingTop: 0 }}
+          >
+            <HopeHub mode={mode} />
           </section>
 
           {/* About Us as a separate \"page\" view */}
