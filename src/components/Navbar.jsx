@@ -20,6 +20,7 @@ const navItems = [
   { label: 'Home', href: '#top', variant: 'text' },
   { label: 'Browse Notes', href: '#browse', variant: 'outlined' },
   { label: 'HN News', href: '#hn-news', variant: 'outlined' },
+  { label: 'HopeHub', href: '#hopehub', variant: 'outlined' },
   { label: 'About Us', href: '#about', variant: 'outlined' },
   { label: 'Donate / Upload', href: '#donate', variant: 'contained', cta: true },
   { label: 'Feedback', href: '#feedback', variant: 'outlined' }
