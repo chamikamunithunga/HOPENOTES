@@ -166,6 +166,7 @@ export function validateFile(file) {
     'image/jpg'
   ];
 
+  
   if (!allowedTypes.includes(file.type)) {
     return {
       valid: false,
